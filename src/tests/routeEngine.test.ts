@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { createNewGame } from '../core/createNewGame';
-import { startRoute, advanceRoute } from '../systems/route/routeEngine';
+import {
+  startRoute,
+  advanceRoute,
+  isAtRouteEnd,
+  getCurrentRoute,
+  getCurrentRouteNode,
+} from '../systems/route/routeEngine';
+import { resolveRouteNode } from '../systems/route/routeNodeResolver';
 import { initialRoutes } from '../data/initialRoutes';
 
 describe('routeEngine', () => {
@@ -100,9 +107,8 @@ describe('routeEngine', () => {
       state.food = 25;
       startRoute(state, 'graybridge_to_graylamp');
 
-      // createNewGame 初始 day = 1，推进2次后 day = 3
-      advanceRoute(state); // day1 -> day2
-      advanceRoute(state); // day2 -> day3
+      advanceRoute(state);
+      advanceRoute(state);
 
       expect(state.day).toBe(3);
       expect(state.currentRouteNodeId).toBe('n3_d3');
@@ -110,7 +116,94 @@ describe('routeEngine', () => {
     });
   });
 
+  describe('isAtRouteEnd', () => {
+    it('第 1 天 isAtRouteEnd 返回 false', () => {
+      const state = createNewGame();
+      startRoute(state, 'graybridge_to_graylamp');
+      expect(isAtRouteEnd(state)).toBe(false);
+    });
+
+    it('推进到第 20 天后，isAtRouteEnd 返回 true', () => {
+      const state = createNewGame();
+      state.food = 100;
+      startRoute(state, 'graybridge_to_graylamp');
+
+      // Advance 19 times to reach day 20
+      for (let i = 0; i < 19; i++) {
+        advanceRoute(state);
+      }
+
+      expect(state.currentRouteNodeId).toBe('n3_d20');
+      expect(isAtRouteEnd(state)).toBe(true);
+    });
+  });
+
+  describe('getCurrentRoute / getCurrentRouteNode', () => {
+    it('startRoute 后 getCurrentRoute 返回有效路线', () => {
+      const state = createNewGame();
+      startRoute(state, 'graybridge_to_graylamp');
+      const route = getCurrentRoute(state);
+      expect(route).not.toBeNull();
+      expect(route!.id).toBe('graybridge_to_graylamp');
+    });
+
+    it('未开始路线时 getCurrentRoute 返回 null', () => {
+      const state = createNewGame();
+      expect(getCurrentRoute(state)).toBeNull();
+    });
+
+    it('getCurrentRouteNode 返回当前节点', () => {
+      const state = createNewGame();
+      startRoute(state, 'graybridge_to_graylamp');
+      const node = getCurrentRouteNode(state);
+      expect(node).not.toBeNull();
+      expect(node!.id).toBe('n3_d1');
+    });
+  });
+
+  describe('resolveRouteNode', () => {
+    it('结算 n3_d9 后 food +4', () => {
+      const state = createNewGame();
+      state.food = 10;
+      const message = resolveRouteNode(state, 'n3_d9');
+      expect(state.food).toBe(14);
+      expect(message).toBe('发现商队残骸，获得补给 +4');
+      expect(state.resolvedRouteNodeIds).toContain('n3_d9');
+    });
+
+    it('结算 n3_d14 后 spareParts +1', () => {
+      const state = createNewGame();
+      state.spareParts = 0;
+      const message = resolveRouteNode(state, 'n3_d14');
+      expect(state.spareParts).toBe(1);
+      expect(message).toBe('发现遗弃工具箱，获得备用零件 +1');
+      expect(state.resolvedRouteNodeIds).toContain('n3_d14');
+    });
+
+    it('同一资源节点重复结算，不会重复加资源', () => {
+      const state = createNewGame();
+      state.food = 10;
+      resolveRouteNode(state, 'n3_d9');
+      expect(state.food).toBe(14);
+
+      const secondMessage = resolveRouteNode(state, 'n3_d9');
+      expect(state.food).toBe(14);
+      expect(secondMessage).toBe('该节点已结算，无法重复领取。');
+    });
+
+    it('未开放节点返回暂未开放消息', () => {
+      const state = createNewGame();
+      const message = resolveRouteNode(state, 'n3_d5');
+      expect(message).toBe('该节点暂未开放');
+    });
+  });
+
   describe('game state fields', () => {
+    it('createNewGame().resolvedRouteNodeIds 初始为空数组', () => {
+      const state = createNewGame();
+      expect(state.resolvedRouteNodeIds).toEqual([]);
+    });
+
     it('不存在 silver 字段', () => {
       const state = createNewGame();
       expect('silver' in state).toBe(false);

@@ -141,6 +141,7 @@ export interface GameState {
   activeRouteId: string | null;
   currentRouteNodeId: string | null;
   completedRouteNodeIds: string[];
+  resolvedRouteNodeIds: string[];
 
   // Characters
   characters: CharacterState[];

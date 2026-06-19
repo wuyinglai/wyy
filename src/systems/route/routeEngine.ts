@@ -1,5 +1,29 @@
-import type { GameState } from '../../core/types';
+import type { GameState, RouteDefinition, RouteNode } from '../../core/types';
 import { initialRoutes } from '../../data/initialRoutes';
+
+export function getCurrentRoute(gameState: GameState): RouteDefinition | null {
+  if (!gameState.activeRouteId) {
+    return null;
+  }
+  return initialRoutes.find(r => r.id === gameState.activeRouteId) || null;
+}
+
+export function getCurrentRouteNode(gameState: GameState): RouteNode | null {
+  const route = getCurrentRoute(gameState);
+  if (!route || !gameState.currentRouteNodeId) {
+    return null;
+  }
+  return route.nodes.find(n => n.id === gameState.currentRouteNodeId) || null;
+}
+
+export function isAtRouteEnd(gameState: GameState): boolean {
+  const route = getCurrentRoute(gameState);
+  const node = getCurrentRouteNode(gameState);
+  if (!route || !node) {
+    return false;
+  }
+  return route.nodes[route.nodes.length - 1].id === node.id;
+}
 
 export function startRoute(gameState: GameState, routeId: string): void {
   const route = initialRoutes.find(r => r.id === routeId);

@@ -1,7 +1,11 @@
 import Phaser from 'phaser';
 import type { GameState } from '../../core/types';
-import { initialRoutes } from '../../data/initialRoutes';
-import { advanceRoute } from '../../systems/route/routeEngine';
+import {
+  advanceRoute,
+  isAtRouteEnd,
+} from '../../systems/route/routeEngine';
+import { resolveRouteNode } from '../../systems/route/routeNodeResolver';
+import { getCurrentRoute, getCurrentRouteNode } from '../../systems/route/routeEngine';
 import { drawPanel } from '../../ui/drawPanel';
 import { drawTextButton } from '../../ui/drawTextButton';
 import {
@@ -44,16 +48,13 @@ export class RouteScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor(COLOR_DARK_BG);
 
-    const route = initialRoutes.find(r => r.id === this.gameState.activeRouteId);
-    if (!route || !this.gameState.currentRouteNodeId) {
+    const route = getCurrentRoute(this.gameState);
+    const currentNode = getCurrentRouteNode(this.gameState);
+    if (!route || !currentNode) {
       throw new Error('Invalid route state');
     }
 
-    const currentNode = route.nodes.find(n => n.id === this.gameState.currentRouteNodeId);
-    if (!currentNode) {
-      throw new Error('Current node not found');
-    }
-
+    const atEnd = isAtRouteEnd(this.gameState);
     const centerX = CANVAS_WIDTH / 2;
     const startY = 60;
 
@@ -134,7 +135,7 @@ export class RouteScene extends Phaser.Scene {
     let warningY = startY + 470;
 
     // Food warning
-    if (this.gameState.food === 0) {
+    if (this.gameState.food === 0 && !atEnd) {
       this.add.text(centerX, warningY, '补给已耗尽，N3.1 教学阶段暂不死档。', {
         fontSize: `${FONT_SIZE_SMALL}px`,
         color: '#ef4444',
@@ -143,25 +144,53 @@ export class RouteScene extends Phaser.Scene {
       warningY += 30;
     }
 
-    // Event/battle/resource node warning
-    const specialTypes = ['event', 'battle', 'resource', 'specialBattle', 'optionalElite'];
-    if (specialTypes.includes(currentNode.type)) {
-      this.add.text(centerX, warningY, '该节点将在后续阶段开放，本阶段仅记录路线推进。', {
+    // Resource node - auto-resolve on enter
+    if (currentNode.type === 'resource') {
+      const message = resolveRouteNode(this.gameState, currentNode.id);
+      this.add.text(centerX, warningY, message, {
         fontSize: `${FONT_SIZE_SMALL}px`,
-        color: '#f59e0b',
+        color: '#10b981',
         align: 'center',
       }).setOrigin(0.5);
+      warningY += 30;
+    } else {
+      // Event/battle/specialBattle/optionalElite node warning
+      const specialTypes = ['event', 'battle', 'specialBattle', 'optionalElite'];
+      if (specialTypes.includes(currentNode.type)) {
+        this.add.text(centerX, warningY, '该节点将在后续阶段开放，本阶段仅记录路线推进。', {
+          fontSize: `${FONT_SIZE_SMALL}px`,
+          color: '#f59e0b',
+          align: 'center',
+        }).setOrigin(0.5);
+        warningY += 30;
+      }
     }
 
-    // Advance button
-    drawTextButton(this, {
-      text: '继续前进',
-      x: centerX,
-      y: startY + 540,
-      width: 200,
-      height: 50,
-      onClick: () => this.handleAdvance(),
-    });
+    if (atEnd) {
+      // End of route - do not show advance button
+      this.add.text(centerX, warningY, '已到达灰灯驿站', {
+        fontSize: `${FONT_SIZE_BODY}px`,
+        color: '#10b981',
+        align: 'center',
+      }).setOrigin(0.5);
+      warningY += 35;
+
+      this.add.text(centerX, warningY, '灰灯驿站功能将在后续阶段开放', {
+        fontSize: `${FONT_SIZE_SMALL}px`,
+        color: '#9ca3af',
+        align: 'center',
+      }).setOrigin(0.5);
+    } else {
+      // Advance button
+      drawTextButton(this, {
+        text: '继续前进',
+        x: centerX,
+        y: startY + 540,
+        width: 200,
+        height: 50,
+        onClick: () => this.handleAdvance(),
+      });
+    }
   }
 
   private formatResourceText(): string {
@@ -175,6 +204,9 @@ export class RouteScene extends Phaser.Scene {
   }
 
   private handleAdvance(): void {
+    if (isAtRouteEnd(this.gameState)) {
+      return;
+    }
     advanceRoute(this.gameState);
     this.scene.restart({ gameState: this.gameState });
   }

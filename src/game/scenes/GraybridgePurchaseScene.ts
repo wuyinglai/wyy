@@ -24,6 +24,7 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
   private gameState!: GameState;
   private resourceText!: Phaser.GameObjects.Text;
   private departureText!: Phaser.GameObjects.Text;
+  private feedbackText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'GraybridgePurchaseScene' });
@@ -136,6 +137,13 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
       onClick: () => this.handleBuyRecommended(),
     });
 
+    // Feedback text
+    this.feedbackText = this.add.text(centerX, startY + 260, '', {
+      fontSize: `${FONT_SIZE_SMALL}px`,
+      color: '#4ade80',
+      align: 'center',
+    }).setOrigin(0.5);
+
     // Departure check panel
     drawPanel(this, {
       x: centerX,
@@ -168,30 +176,73 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    // Return button
+    // Bottom buttons
+    const buttonY = startY + 470;
+
     drawTextButton(this, {
       text: '返回商队总览',
-      x: centerX,
-      y: startY + 470,
+      x: centerX - 200,
+      y: buttonY,
       width: 200,
       height: 45,
       onClick: () => this.returnToOverview(),
     });
+
+    drawTextButton(this, {
+      text: '出发',
+      x: centerX + 200,
+      y: buttonY,
+      width: 200,
+      height: 45,
+      onClick: () => this.handleDepart(),
+    });
   }
 
   private handleBuyFood(amount: number): void {
-    this.gameState = buyFood(this.gameState, amount);
+    const result = buyFood(this.gameState, amount);
+    this.gameState = result.gameState;
     this.updateUI();
+    this.feedbackText.setText(result.message);
+    if (result.success) {
+      this.feedbackText.setColor('#4ade80');
+    } else {
+      this.feedbackText.setColor('#f87171');
+    }
   }
 
   private handleBuySpareParts(amount: number): void {
-    this.gameState = buySpareParts(this.gameState, amount);
+    const result = buySpareParts(this.gameState, amount);
+    this.gameState = result.gameState;
     this.updateUI();
+    this.feedbackText.setText(result.message);
+    if (result.success) {
+      this.feedbackText.setColor('#4ade80');
+    } else {
+      this.feedbackText.setColor('#f87171');
+    }
   }
 
   private handleBuyRecommended(): void {
-    this.gameState = buyRecommendedSupplies(this.gameState);
+    const result = buyRecommendedSupplies(this.gameState);
+    this.gameState = result.gameState;
     this.updateUI();
+    this.feedbackText.setText(result.message);
+    if (result.success) {
+      this.feedbackText.setColor('#4ade80');
+    } else {
+      this.feedbackText.setColor('#f87171');
+    }
+  }
+
+  private handleDepart(): void {
+    const check = canDepart(this.gameState);
+    if (!check.canDepart) {
+      this.feedbackText.setText(check.reasons.join('，'));
+      this.feedbackText.setColor('#f87171');
+      return;
+    }
+    // Enter route preparation scene
+    this.scene.start('RoutePrepScene', { gameState: this.gameState });
   }
 
   private updateUI(): void {

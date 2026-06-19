@@ -56,5 +56,19 @@ export function createNewGame(): GameState {
     emberSeeds: 0,
     ancientMemoryFragments: 0,
     ashMaterials: 0,
+
+    // v2.1 reserved fields
+    moraleRestDaysAtSafeLocation: 0,
+    weatherId: null,
+    weatherStrength: null,
+    ambushRateModifier: 0,
+    burningStacksByTargetId: {},
+    burningTurnsByTargetId: {},
+    burningCanSpreadByTargetId: {},
+    bleedStacksByTargetId: {},
+    slowStacksByTargetId: {},
+    positiveBuffsByTargetId: {},
+    orderOverdueById: {},
+    orderRewardMultiplierById: {},
   };
 }

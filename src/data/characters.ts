@@ -10,7 +10,7 @@ export const initialCharacters: CharacterState[] = [
     shield: 0,
     barrier: 0,
     role: '前排、防御、护车、拦截',
-    skillNames: ['刺', '第二技能待确认', '稳住阵线', '盾反', '重击', '车队防护'],
+    skillNames: ['回刃', '横身拦截', '稳住阵线', '盾反', '重击', '车队防护'],
   },
   {
     id: 'wasteland_shooter',
@@ -21,7 +21,7 @@ export const initialCharacters: CharacterState[] = [
     shield: 0,
     barrier: 0,
     role: '输出、标记、流血、迟滞、追击',
-    skillNames: ['精确射击', '放血箭', '断筋箭', '回刃', '会合射击', '第六技能待确认'],
+    skillNames: ['标记', '放血箭', '断筋箭', '猎灰重箭', '会合射击', '补射'],
   },
   {
     id: 'mechanic',

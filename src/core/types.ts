@@ -108,6 +108,30 @@ export interface RouteDefinition {
   nodes: RouteNode[];
 }
 
+// Negative status types (v2.1 placeholder)
+export type NegativeStatusType =
+  | 'bleed'
+  | 'slow'
+  | 'ashCorrosion'
+  | 'burning'
+  | 'marked';
+
+// Positive buff types (v2.1 placeholder)
+export type PositiveBuffType =
+  | 'shield'
+  | 'armor'
+  | 'counterBlade'
+  | 'overload'
+  | 'caravanGuard'
+  | 'holdLine'
+  | 'repairBoost';
+
+// Special status types (v2.1 placeholder)
+export type SpecialStatusType =
+  | 'injured'
+  | 'caravanDisabled'
+  | 'cargoDamaged';
+
 // Resource change record
 export interface ResourceChange {
   gold?: number;
@@ -173,4 +197,18 @@ export interface GameState {
   emberSeeds: number;
   ancientMemoryFragments: number;
   ashMaterials: number;
+
+  // v2.1 reserved fields
+  moraleRestDaysAtSafeLocation: number;
+  weatherId: string | null;
+  weatherStrength: 'weak' | 'normal' | 'strong' | null;
+  ambushRateModifier: number;
+  burningStacksByTargetId: Record<string, number>;
+  burningTurnsByTargetId: Record<string, number>;
+  burningCanSpreadByTargetId: Record<string, boolean>;
+  bleedStacksByTargetId: Record<string, number>;
+  slowStacksByTargetId: Record<string, number>;
+  positiveBuffsByTargetId: Record<string, PositiveBuffType[]>;
+  orderOverdueById: Record<string, boolean>;
+  orderRewardMultiplierById: Record<string, number>;
 }

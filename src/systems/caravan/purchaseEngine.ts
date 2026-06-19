@@ -1,8 +1,9 @@
 import type { GameState } from '../../core/types';
-
-// Prices
-export const FOOD_PRICE = 2;
-export const SPARE_PARTS_PRICE = 5;
+import {
+  type LocationType,
+  type LocationPrices,
+  getLocationPrices,
+} from '../../data/locationPrices';
 
 // Recommended purchase bundle
 export const RECOMMENDED_FOOD = 24;
@@ -25,8 +26,14 @@ export interface PurchaseResult {
   message: string;
 }
 
-export function buyFood(gameState: GameState, amount: number): PurchaseResult {
-  const totalCost = amount * FOOD_PRICE;
+export function buyFood(
+  gameState: GameState,
+  locationType: LocationType,
+  amount: number,
+): PurchaseResult {
+  const prices: LocationPrices = getLocationPrices(locationType);
+  const foodPrice = prices.foodPrice;
+  const totalCost = amount * foodPrice;
   if (gameState.gold < totalCost) {
     return {
       gameState,
@@ -45,8 +52,21 @@ export function buyFood(gameState: GameState, amount: number): PurchaseResult {
   };
 }
 
-export function buySpareParts(gameState: GameState, amount: number): PurchaseResult {
-  const totalCost = amount * SPARE_PARTS_PRICE;
+export function buySpareParts(
+  gameState: GameState,
+  locationType: LocationType,
+  amount: number,
+): PurchaseResult {
+  const prices: LocationPrices = getLocationPrices(locationType);
+  if (prices.sparePartPrice === null) {
+    return {
+      gameState,
+      success: false,
+      message: '此地不售卖备用零件',
+    };
+  }
+  const sparePartPrice = prices.sparePartPrice;
+  const totalCost = amount * sparePartPrice;
   if (gameState.gold < totalCost) {
     return {
       gameState,
@@ -65,8 +85,21 @@ export function buySpareParts(gameState: GameState, amount: number): PurchaseRes
   };
 }
 
-export function buyRecommendedSupplies(gameState: GameState): PurchaseResult {
-  const totalCost = RECOMMENDED_FOOD * FOOD_PRICE + RECOMMENDED_SPARE_PARTS * SPARE_PARTS_PRICE;
+export function buyRecommendedSupplies(
+  gameState: GameState,
+  locationType: LocationType,
+): PurchaseResult {
+  const prices: LocationPrices = getLocationPrices(locationType);
+  if (prices.sparePartPrice === null) {
+    return {
+      gameState,
+      success: false,
+      message: '此地无法购买推荐采购包',
+    };
+  }
+  const totalCost =
+    RECOMMENDED_FOOD * prices.foodPrice +
+    RECOMMENDED_SPARE_PARTS * prices.sparePartPrice;
   if (gameState.gold < totalCost) {
     return {
       gameState,

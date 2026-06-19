@@ -89,8 +89,8 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
 
     this.add.text(centerX + 300, startY + 105, [
       '1 补给 = 2 金币',
-      '1 备用零件 = 5 金币',
-      '推荐采购包: 24 补给 + 4 备用零件 (68 金币)',
+      '1 备用零件 = 8 金币',
+      '推荐采购包: 24 补给 + 4 备用零件 (80 金币)',
     ].join('\n'), {
       fontSize: `${FONT_SIZE_SMALL}px`,
       color: '#9ca3af',
@@ -199,7 +199,7 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
   }
 
   private handleBuyFood(amount: number): void {
-    const result = buyFood(this.gameState, amount);
+    const result = buyFood(this.gameState, 'town', amount);
     this.gameState = result.gameState;
     this.updateUI();
     this.feedbackText.setText(result.message);
@@ -211,7 +211,7 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
   }
 
   private handleBuySpareParts(amount: number): void {
-    const result = buySpareParts(this.gameState, amount);
+    const result = buySpareParts(this.gameState, 'town', amount);
     this.gameState = result.gameState;
     this.updateUI();
     this.feedbackText.setText(result.message);
@@ -223,7 +223,7 @@ export class GraybridgePurchaseScene extends Phaser.Scene {
   }
 
   private handleBuyRecommended(): void {
-    const result = buyRecommendedSupplies(this.gameState);
+    const result = buyRecommendedSupplies(this.gameState, 'town');
     this.gameState = result.gameState;
     this.updateUI();
     this.feedbackText.setText(result.message);

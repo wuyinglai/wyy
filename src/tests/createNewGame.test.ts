@@ -63,29 +63,41 @@ describe('createNewGame', () => {
     expect(mechanic?.armor).toBe(0);
   });
 
-  it('should have 护路人 skill names', () => {
+  it('护路人技能应按 v2.1 同步', () => {
     const roadGuard = createNewGame().characters.find(c => c.id === 'road_guard');
     expect(roadGuard).toBeDefined();
-    expect(roadGuard?.skillNames).toContain('刺');
-    expect(roadGuard?.skillNames).toContain('第二技能待确认');
+    expect(roadGuard?.skillNames).toContain('回刃');
+    expect(roadGuard?.skillNames).toContain('横身拦截');
     expect(roadGuard?.skillNames).toContain('稳住阵线');
     expect(roadGuard?.skillNames).toContain('盾反');
     expect(roadGuard?.skillNames).toContain('重击');
     expect(roadGuard?.skillNames).toContain('车队防护');
   });
 
-  it('should have 荒野射手 skill names', () => {
+  it('荒野射手技能应按 v2.1 同步', () => {
     const shooter = createNewGame().characters.find(c => c.id === 'wasteland_shooter');
     expect(shooter).toBeDefined();
-    expect(shooter?.skillNames).toContain('精确射击');
+    expect(shooter?.skillNames).toContain('标记');
     expect(shooter?.skillNames).toContain('放血箭');
     expect(shooter?.skillNames).toContain('断筋箭');
-    expect(shooter?.skillNames).toContain('回刃');
+    expect(shooter?.skillNames).toContain('猎灰重箭');
     expect(shooter?.skillNames).toContain('会合射击');
-    expect(shooter?.skillNames).toContain('第六技能待确认');
+    expect(shooter?.skillNames).toContain('补射');
   });
 
-  it('should have 修补师 skill names', () => {
+  it('荒野射手不得出现精确射击', () => {
+    const shooter = createNewGame().characters.find(c => c.id === 'wasteland_shooter');
+    expect(shooter).toBeDefined();
+    expect(shooter?.skillNames).not.toContain('精确射击');
+  });
+
+  it('荒野射手不得出现回刃', () => {
+    const shooter = createNewGame().characters.find(c => c.id === 'wasteland_shooter');
+    expect(shooter).toBeDefined();
+    expect(shooter?.skillNames).not.toContain('回刃');
+  });
+
+  it('修补师技能应按 v2.1 同步', () => {
     const mechanic = createNewGame().characters.find(c => c.id === 'mechanic');
     expect(mechanic).toBeDefined();
     expect(mechanic?.skillNames).toContain('简易治疗');
@@ -124,5 +136,62 @@ describe('createNewGame', () => {
   it('should NOT have cartHp field', () => {
     const state = createNewGame();
     expect('cartHp' in state).toBe(false);
+  });
+
+  // v2.1 reserved fields
+  it('should have moraleRestDaysAtSafeLocation', () => {
+    expect(createNewGame().moraleRestDaysAtSafeLocation).toBe(0);
+  });
+
+  it('should have weatherId as null', () => {
+    expect(createNewGame().weatherId).toBeNull();
+  });
+
+  it('should have weatherStrength as null', () => {
+    expect(createNewGame().weatherStrength).toBeNull();
+  });
+
+  it('should have ambushRateModifier as 0', () => {
+    expect(createNewGame().ambushRateModifier).toBe(0);
+  });
+
+  it('should have burningStacksByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.burningStacksByTargetId).toEqual({});
+  });
+
+  it('should have burningsTurnsByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.burningTurnsByTargetId).toEqual({});
+  });
+
+  it('should have burningCanSpreadByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.burningCanSpreadByTargetId).toEqual({});
+  });
+
+  it('should have bleedStacksByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.bleedStacksByTargetId).toEqual({});
+  });
+
+  it('should have slowStacksByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.slowStacksByTargetId).toEqual({});
+  });
+
+  it('should have positiveBuffsByTargetId as empty object', () => {
+    const state = createNewGame();
+    expect(state.positiveBuffsByTargetId).toEqual({});
+  });
+
+  it('should have orderOverdueById as empty object', () => {
+    const state = createNewGame();
+    expect(state.orderOverdueById).toEqual({});
+  });
+
+  it('should have orderRewardMultiplierById as empty object', () => {
+    const state = createNewGame();
+    expect(state.orderRewardMultiplierById).toEqual({});
   });
 });

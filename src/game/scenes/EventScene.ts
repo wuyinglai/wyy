@@ -14,6 +14,10 @@ import {
 
 interface EventSceneData {
   gameState: GameState;
+  lastResult?: {
+    success: boolean;
+    message: string;
+  };
 }
 
 interface EventChoice {
@@ -57,6 +61,10 @@ const EVENT_DEFINITIONS: Record<string, EventDefinition> = {
 
 export class EventScene extends Phaser.Scene {
   private gameState!: GameState;
+  private lastResult?: {
+    success: boolean;
+    message: string;
+  };
 
   constructor() {
     super({ key: 'EventScene' });
@@ -64,6 +72,7 @@ export class EventScene extends Phaser.Scene {
 
   init(data: EventSceneData): void {
     this.gameState = data.gameState;
+    this.lastResult = data.lastResult;
   }
 
   create(): void {
@@ -78,9 +87,6 @@ export class EventScene extends Phaser.Scene {
     if (!eventDef) {
       throw new Error(`Event definition not found: ${node.id}`);
     }
-
-    // 检查是否已结算
-    const isResolved = this.gameState.resolvedEventNodeIds.includes(node.id);
 
     const centerX = CANVAS_WIDTH / 2;
     const startY = 60;
@@ -135,6 +141,30 @@ export class EventScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5);
 
+    // ==== 如果是上一次选择的结果，显示结果消息 ====
+    if (this.lastResult) {
+      const color = this.lastResult.success ? '#10b981' : '#ef4444';
+      this.add.text(centerX, startY + 370, this.lastResult.message, {
+        fontSize: `${FONT_SIZE_BODY}px`,
+        color,
+        align: 'center',
+        wordWrap: { width: 650 },
+      }).setOrigin(0.5);
+
+      drawTextButton(this, {
+        text: '返回路线',
+        x: centerX,
+        y: startY + 460,
+        width: 200,
+        height: 50,
+        onClick: () => this.returnToRoute(),
+      });
+      return;
+    }
+
+    // 检查是否已结算
+    const isResolved = this.gameState.resolvedEventNodeIds.includes(node.id);
+
     if (isResolved) {
       // 已结算事件
       this.add.text(centerX, startY + 350, '该事件已结算', {
@@ -178,7 +208,6 @@ export class EventScene extends Phaser.Scene {
 
     // 普通事件 - 显示选项按钮
     const choiceY = startY + 370;
-    const choiceHeight = 45;
     const spacing = 55;
 
     eventDef.choices.forEach((choice, index) => {
@@ -187,7 +216,7 @@ export class EventScene extends Phaser.Scene {
         x: centerX,
         y: choiceY + index * spacing,
         width: 500,
-        height: choiceHeight,
+        height: 45,
         onClick: () => this.handleChoice(node.id, choice.choiceId),
       });
     });
@@ -215,8 +244,11 @@ export class EventScene extends Phaser.Scene {
   }
 
   private handleChoice(nodeId: string, choiceId: string): void {
-    resolveRouteEventChoice(this.gameState, nodeId, choiceId);
-    this.scene.restart({ gameState: this.gameState });
+    const result = resolveRouteEventChoice(this.gameState, nodeId, choiceId);
+    this.scene.restart({
+      gameState: this.gameState,
+      lastResult: { success: result.success, message: result.message },
+    });
   }
 
   private returnToRoute(): void {

@@ -198,27 +198,23 @@ export class RouteScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5);
     } else {
-      // Event node - show handle event button
-      let buttonY = startY + 540;
-      if (currentNode.type === 'event') {
+      const buttonY = startY + 540;
+      const isEventNode = currentNode.type === 'event';
+      const isEventResolved =
+        isEventNode && this.gameState.resolvedEventNodeIds.includes(currentNode.id);
+
+      if (isEventNode && !isEventResolved) {
+        // 事件未结算：只显示"处理事件"
         drawTextButton(this, {
           text: '处理事件',
-          x: centerX - 110,
+          x: centerX,
           y: buttonY,
           width: 200,
           height: 50,
           onClick: () => this.handleEvent(),
         });
-
-        drawTextButton(this, {
-          text: '继续前进',
-          x: centerX + 110,
-          y: buttonY,
-          width: 200,
-          height: 50,
-          onClick: () => this.handleAdvance(),
-        });
       } else {
+        // 普通节点 / 事件已结算：显示继续前进
         drawTextButton(this, {
           text: '继续前进',
           x: centerX,

@@ -113,13 +113,12 @@ export class CaravanOverviewScene extends Phaser.Scene {
     const buttonY = startY + 470;
 
     drawTextButton(this, {
-      text: '采购整备 (Phase 2)',
+      text: '采购整备',
       x: centerX - 110,
       y: buttonY,
       width: 200,
       height: 45,
-      onClick: () => this.showPhaseMessage('Phase 2 开放'),
-      disabled: true,
+      onClick: () => this.scene.start('GraybridgePurchaseScene', { gameState: this.gameState }),
     });
 
     drawTextButton(this, {

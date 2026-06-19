@@ -142,6 +142,7 @@ export interface GameState {
   currentRouteNodeId: string | null;
   completedRouteNodeIds: string[];
   resolvedRouteNodeIds: string[];
+  resolvedEventNodeIds: string[];
 
   // Characters
   characters: CharacterState[];

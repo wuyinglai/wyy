@@ -131,7 +131,7 @@ export class RouteScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    // Warning messages
+    // Warning messages area
     let warningY = startY + 470;
 
     // Food warning
@@ -153,9 +153,26 @@ export class RouteScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5);
       warningY += 30;
+    } else if (currentNode.type === 'event') {
+      // Event node - show status + button
+      const isResolved = this.gameState.resolvedEventNodeIds.includes(currentNode.id);
+      if (isResolved) {
+        this.add.text(centerX, warningY, '该事件已结算', {
+          fontSize: `${FONT_SIZE_SMALL}px`,
+          color: '#9ca3af',
+          align: 'center',
+        }).setOrigin(0.5);
+      } else {
+        this.add.text(centerX, warningY, '前方有事件，点击按钮处理。', {
+          fontSize: `${FONT_SIZE_SMALL}px`,
+          color: '#f59e0b',
+          align: 'center',
+        }).setOrigin(0.5);
+      }
+      warningY += 30;
     } else {
-      // Event/battle/specialBattle/optionalElite node warning
-      const specialTypes = ['event', 'battle', 'specialBattle', 'optionalElite'];
+      // Battle/specialBattle/optionalElite - still not open
+      const specialTypes = ['battle', 'specialBattle', 'optionalElite'];
       if (specialTypes.includes(currentNode.type)) {
         this.add.text(centerX, warningY, '该节点将在后续阶段开放，本阶段仅记录路线推进。', {
           fontSize: `${FONT_SIZE_SMALL}px`,
@@ -167,7 +184,7 @@ export class RouteScene extends Phaser.Scene {
     }
 
     if (atEnd) {
-      // End of route - do not show advance button
+      // End of route
       this.add.text(centerX, warningY, '已到达灰灯驿站', {
         fontSize: `${FONT_SIZE_BODY}px`,
         color: '#10b981',
@@ -181,15 +198,36 @@ export class RouteScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5);
     } else {
-      // Advance button
-      drawTextButton(this, {
-        text: '继续前进',
-        x: centerX,
-        y: startY + 540,
-        width: 200,
-        height: 50,
-        onClick: () => this.handleAdvance(),
-      });
+      // Event node - show handle event button
+      let buttonY = startY + 540;
+      if (currentNode.type === 'event') {
+        drawTextButton(this, {
+          text: '处理事件',
+          x: centerX - 110,
+          y: buttonY,
+          width: 200,
+          height: 50,
+          onClick: () => this.handleEvent(),
+        });
+
+        drawTextButton(this, {
+          text: '继续前进',
+          x: centerX + 110,
+          y: buttonY,
+          width: 200,
+          height: 50,
+          onClick: () => this.handleAdvance(),
+        });
+      } else {
+        drawTextButton(this, {
+          text: '继续前进',
+          x: centerX,
+          y: buttonY,
+          width: 200,
+          height: 50,
+          onClick: () => this.handleAdvance(),
+        });
+      }
     }
   }
 
@@ -209,5 +247,9 @@ export class RouteScene extends Phaser.Scene {
     }
     advanceRoute(this.gameState);
     this.scene.restart({ gameState: this.gameState });
+  }
+
+  private handleEvent(): void {
+    this.scene.start('EventScene', { gameState: this.gameState });
   }
 }

@@ -23,6 +23,7 @@ export function createNewGame(): GameState {
     currentRouteNodeId: null,
     completedRouteNodeIds: [],
     resolvedRouteNodeIds: [],
+    resolvedEventNodeIds: [],
 
     characters: [...initialCharacters],
     caravan: {

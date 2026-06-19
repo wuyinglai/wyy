@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { GameState } from '../../core/types';
+import { startRoute } from '../../systems/route/routeEngine';
 import { drawPanel } from '../../ui/drawPanel';
 import { drawTextButton } from '../../ui/drawTextButton';
 import {
@@ -82,11 +83,21 @@ export class RoutePrepScene extends Phaser.Scene {
     // Return button
     drawTextButton(this, {
       text: '返回采购界面',
-      x: centerX,
+      x: centerX - 120,
       y: startY + 480,
       width: 200,
       height: 45,
       onClick: () => this.returnToPurchase(),
+    });
+
+    // Start route button
+    drawTextButton(this, {
+      text: '开始路线',
+      x: centerX + 120,
+      y: startY + 480,
+      width: 200,
+      height: 45,
+      onClick: () => this.startRoute(),
     });
   }
 
@@ -102,5 +113,10 @@ export class RoutePrepScene extends Phaser.Scene {
 
   private returnToPurchase(): void {
     this.scene.start('GraybridgePurchaseScene', { gameState: this.gameState });
+  }
+
+  private startRoute(): void {
+    startRoute(this.gameState, 'graybridge_to_graylamp');
+    this.scene.start('RouteScene', { gameState: this.gameState });
   }
 }

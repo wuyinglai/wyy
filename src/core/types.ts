@@ -75,6 +75,39 @@ export interface LocationState {
   reputation: number;
 }
 
+// Route node types
+export type RouteNodeType =
+  | 'start'
+  | 'calm'
+  | 'event'
+  | 'resource'
+  | 'battle'
+  | 'specialBattle'
+  | 'optionalElite'
+  | 'outpost'
+  | 'city'
+  | 'village'
+  | 'town';
+
+// Route node
+export interface RouteNode {
+  id: string;
+  dayIndex: number;
+  name: string;
+  type: RouteNodeType;
+  description: string;
+}
+
+// Route definition
+export interface RouteDefinition {
+  id: string;
+  name: string;
+  startLocationId: string;
+  endLocationId: string;
+  totalDays: number;
+  nodes: RouteNode[];
+}
+
 // Resource change record
 export interface ResourceChange {
   gold?: number;

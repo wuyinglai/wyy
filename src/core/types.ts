@@ -108,6 +108,57 @@ export interface RouteDefinition {
   nodes: RouteNode[];
 }
 
+// Grid map position
+export interface GridPosition {
+  x: number;
+  y: number;
+}
+
+// Grid map direction
+export type GridDirection = 'up' | 'down' | 'left' | 'right';
+
+// Grid map tile types
+export type GridTileType =
+  | 'town'
+  | 'outpost'
+  | 'calm'
+  | 'road'
+  | 'event'
+  | 'resource'
+  | 'battle'
+  | 'specialBattle'
+  | 'optionalElite'
+  | 'obstacle';
+
+// Grid map tile
+export interface GridTile {
+  id: string;
+  x: number;
+  y: number;
+  type: GridTileType;
+  name: string;
+  description: string;
+  isPassable: boolean;
+}
+
+// Grid map definition
+export interface GridMapDefinition {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  startTileId: string;
+  tiles: GridTile[];
+}
+
+// Grid map move result
+export interface GridMoveResult {
+  gameState: GameState;
+  success: boolean;
+  message: string;
+  tile?: GridTile;
+}
+
 // Negative status types (v2.1 placeholder)
 export type NegativeStatusType =
   | 'bleed'
@@ -211,4 +262,12 @@ export interface GameState {
   positiveBuffsByTargetId: Record<string, PositiveBuffType[]>;
   orderOverdueById: Record<string, boolean>;
   orderRewardMultiplierById: Record<string, number>;
+
+  // Grid map
+  activeMapId: string | null;
+  playerPosition: GridPosition | null;
+  currentTileId: string | null;
+  visitedTileIds: string[];
+  revealedTileIds: string[];
+  resolvedTileIds: string[];
 }

@@ -1,0 +1,197 @@
+import type { GridMapDefinition } from '../core/types';
+
+export const initialGridMaps: GridMapDefinition[] = [
+  {
+    id: 'graybridge_region_map',
+    name: '灰桥镇外荒野',
+    width: 7,
+    height: 5,
+    startTileId: 'tile_graybridge_town',
+    tiles: [
+      // Main road (y=2)
+      {
+        id: 'tile_graybridge_town',
+        x: 0,
+        y: 2,
+        type: 'town',
+        name: '灰桥镇',
+        description: '商队出发前的最后城镇。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_road_1_2',
+        x: 1,
+        y: 2,
+        type: 'road',
+        name: '旧路',
+        description: '商队沿旧路前进。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_broken_road',
+        x: 2,
+        y: 2,
+        type: 'event',
+        name: '断裂路面',
+        description: '前方道路出现断裂。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_calm_3_2',
+        x: 3,
+        y: 2,
+        type: 'calm',
+        name: '安静荒路',
+        description: '商队穿过安静荒路。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_wounded_traveler',
+        x: 4,
+        y: 2,
+        type: 'event',
+        name: '受伤旅人',
+        description: '路边坐着受伤的旅人。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_road_5_2',
+        x: 5,
+        y: 2,
+        type: 'road',
+        name: '旧路',
+        description: '商队沿旧路前进。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_graylamp_outpost',
+        x: 6,
+        y: 2,
+        type: 'outpost',
+        name: '灰灯驿站',
+        description: '荒野中的安全驿站，完整功能后续开放。',
+        isPassable: true,
+      },
+
+      // Branch top (y=1)
+      {
+        id: 'tile_caravan_wreck',
+        x: 2,
+        y: 1,
+        type: 'resource',
+        name: '商队残骸',
+        description: '废弃商队残骸中或许还有可用资源。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_post_lamp',
+        x: 3,
+        y: 1,
+        type: 'event',
+        name: '驿站灯火',
+        description: '远处似有驿站灯火闪烁。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_ash_cub_battle',
+        x: 4,
+        y: 1,
+        type: 'battle',
+        name: '灰烬幼兽战',
+        description: '一群灰烬幼兽从四周逼近。',
+        isPassable: true,
+      },
+
+      // Branch top (y=0)
+      {
+        id: 'tile_optional_elite',
+        x: 3,
+        y: 0,
+        type: 'optionalElite',
+        name: '灰烬母巢',
+        description: '一座巨大的灰烬母巢静静盘踞，进入危险。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_obstacle_2_0',
+        x: 2,
+        y: 0,
+        type: 'obstacle',
+        name: '巨岩堆',
+        description: '巨石堆阻挡去路。',
+        isPassable: false,
+      },
+      {
+        id: 'tile_obstacle_4_0',
+        x: 4,
+        y: 0,
+        type: 'obstacle',
+        name: '裂缝地',
+        description: '地面裂缝无法通行。',
+        isPassable: false,
+      },
+
+      // Branch bottom (y=3)
+      {
+        id: 'tile_abandoned_toolbox',
+        x: 2,
+        y: 3,
+        type: 'resource',
+        name: '遗弃工具箱',
+        description: '路边被遗弃的工具箱。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_bandit_robbery',
+        x: 3,
+        y: 3,
+        type: 'specialBattle',
+        name: '劫匪抢货战',
+        description: '一群劫匪正准备抢货。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_split_back_beast',
+        x: 4,
+        y: 3,
+        type: 'battle',
+        name: '裂背灰烬兽战',
+        description: '裂背灰烬兽挡住去路。',
+        isPassable: true,
+      },
+
+      // Branch bottom (y=4)
+      {
+        id: 'tile_calm_3_4',
+        x: 3,
+        y: 4,
+        type: 'calm',
+        name: '安静荒路',
+        description: '商队穿过安静荒路。',
+        isPassable: true,
+      },
+      {
+        id: 'tile_obstacle_2_4',
+        x: 2,
+        y: 4,
+        type: 'obstacle',
+        name: '沼泽',
+        description: '泥泞沼泽无法通行。',
+        isPassable: false,
+      },
+      {
+        id: 'tile_obstacle_4_4',
+        x: 4,
+        y: 4,
+        type: 'obstacle',
+        name: '倒塌塔楼',
+        description: '倒塌的塔楼残骸阻挡去路。',
+        isPassable: false,
+      },
+    ],
+  },
+];
+
+export function getInitialGridMapById(mapId: string): GridMapDefinition | undefined {
+  return initialGridMaps.find((m) => m.id === mapId);
+}

@@ -70,5 +70,13 @@ export function createNewGame(): GameState {
     positiveBuffsByTargetId: {},
     orderOverdueById: {},
     orderRewardMultiplierById: {},
+
+    // Grid map
+    activeMapId: null,
+    playerPosition: null,
+    currentTileId: null,
+    visitedTileIds: [],
+    revealedTileIds: [],
+    resolvedTileIds: [],
   };
 }

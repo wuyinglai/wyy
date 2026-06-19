@@ -4,7 +4,7 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { CaravanOverviewScene } from './scenes/CaravanOverviewScene';
 import { GraybridgePurchaseScene } from './scenes/GraybridgePurchaseScene';
 import { RoutePrepScene } from './scenes/RoutePrepScene';
-import { RouteScene } from './scenes/RouteScene';
+import { GridMapScene } from './scenes/GridMapScene';
 import { EventScene } from './scenes/EventScene';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_DARK_BG } from '../core/constants';
 
@@ -15,7 +15,7 @@ export function createGame(): Phaser.Game {
     height: CANVAS_HEIGHT,
     parent: 'game-container',
     backgroundColor: COLOR_DARK_BG,
-    scene: [BootScene, MainMenuScene, CaravanOverviewScene, GraybridgePurchaseScene, RoutePrepScene, RouteScene, EventScene],
+    scene: [BootScene, MainMenuScene, CaravanOverviewScene, GraybridgePurchaseScene, RoutePrepScene, GridMapScene, EventScene],
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,

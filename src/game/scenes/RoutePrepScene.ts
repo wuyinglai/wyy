@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { GameState } from '../../core/types';
-import { startRoute } from '../../systems/route/routeEngine';
+import { startGridMap } from '../../systems/map/gridMapEngine';
 import { drawPanel } from '../../ui/drawPanel';
 import { drawTextButton } from '../../ui/drawTextButton';
 import {
@@ -43,8 +43,7 @@ export class RoutePrepScene extends Phaser.Scene {
     this.add.text(centerX, startY + 70, [
       '当前位置: 灰桥镇',
       '目标: 灰灯驿站',
-      '预计路线: N3.1 固定教学路线',
-      '预计天数: 20 天',
+      '地图: 灰桥镇外荒野 (7x5 格子地图)',
     ].join('\n'), {
       fontSize: `${FONT_SIZE_BODY}px`,
       color: '#ffffff',
@@ -74,7 +73,7 @@ export class RoutePrepScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Hint
-    this.add.text(centerX, startY + 420, '下一阶段将开放: 灰桥镇 → 灰灯驿站 20 天固定教学路线。', {
+    this.add.text(centerX, startY + 420, '点击“开始路线”进入格子地图探索荒野。', {
       fontSize: `${FONT_SIZE_SMALL}px`,
       color: '#9ca3af',
       align: 'center',
@@ -116,7 +115,7 @@ export class RoutePrepScene extends Phaser.Scene {
   }
 
   private startRoute(): void {
-    startRoute(this.gameState, 'graybridge_to_graylamp');
-    this.scene.start('RouteScene', { gameState: this.gameState });
+    startGridMap(this.gameState, 'graybridge_region_map');
+    this.scene.start('GridMapScene', { gameState: this.gameState });
   }
 }

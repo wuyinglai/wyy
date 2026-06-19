@@ -1,4 +1,5 @@
 import type { GameState } from './types';
+import { initialCharacters } from '../data/characters';
 
 export function createNewGame(): GameState {
   return {
@@ -22,8 +23,7 @@ export function createNewGame(): GameState {
     currentRouteNodeId: null,
     completedRouteNodeIds: [],
 
-    // Characters - will be populated from data/characters.ts
-    characters: [],
+    characters: [...initialCharacters],
     caravan: {
       caravanHp: 100,
       caravanMaxHp: 100,

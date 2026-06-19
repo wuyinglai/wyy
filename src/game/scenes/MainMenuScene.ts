@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { createNewGame } from '../../core/createNewGame';
-import { initialCharacters } from '../../data/characters';
 import { drawTextButton } from '../../ui/drawTextButton';
 import {
   CANVAS_WIDTH,
@@ -50,9 +49,6 @@ export class MainMenuScene extends Phaser.Scene {
   private startNewGame(): void {
     // Create new game state
     const gameState = createNewGame();
-
-    // Add initial characters
-    gameState.characters = [...initialCharacters];
 
     // Transition to caravan overview
     this.scene.start('CaravanOverviewScene', { gameState });

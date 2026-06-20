@@ -5,6 +5,8 @@ import {
   getVisibleTutorialCorridorNodes,
   moveTutorialCorridor,
   resolveTutorialCorridorNode,
+  requiresTutorialCorridorResolution,
+  isTutorialCorridorNodeResolved,
 } from '../../systems/tutorial/tutorialCorridorEngine';
 import { getTutorialCorridorViewportRange } from './tutorialCorridorLayout';
 
@@ -251,6 +253,28 @@ export class TutorialCorridorScene extends Phaser.Scene {
       wordWrap: { width: 720 },
     });
 
+    // Resolution status
+    let statusText = '';
+    let statusColor = '#ffffff';
+    if (currentNode.type === 'outpost') {
+      statusText = '终点';
+      statusColor = '#fbbf24';
+    } else if (!requiresTutorialCorridorResolution(currentNode)) {
+      statusText = '无需处理';
+      statusColor = '#9ca3af';
+    } else if (isTutorialCorridorNodeResolved(this.gameState, currentNode.id)) {
+      statusText = '已处理';
+      statusColor = '#10b981';
+    } else {
+      statusText = '未处理';
+      statusColor = '#ef4444';
+    }
+
+    this.add.text(40, panelY + 90, `处理状态: ${statusText}`, {
+      fontSize: '16px',
+      color: statusColor,
+    });
+
     // Resources
     const resourceY = panelY + 120;
     this.add.text(40, resourceY, `Day ${this.gameState.day}  Food ${this.gameState.food}  Gold ${this.gameState.gold}  Parts ${this.gameState.spareParts}`, {
@@ -266,18 +290,43 @@ export class TutorialCorridorScene extends Phaser.Scene {
 
   private renderButtons(): void {
     const buttonY = 550;
+    const currentNode = getCurrentTutorialCorridorNode(this.gameState);
 
     // Resolve button
-    const resolveBtn = this.add.rectangle(300, buttonY, 120, 40, 0x10b981);
+    let resolveButtonText = '处理节点';
+    let resolveButtonColor = 0x10b981; // green
+    let resolveButtonEnabled = true;
+
+    if (currentNode) {
+      if (currentNode.type === 'outpost') {
+        resolveButtonText = '终点';
+        resolveButtonColor = 0xfbbf24; // yellow
+        resolveButtonEnabled = false;
+      } else if (!requiresTutorialCorridorResolution(currentNode)) {
+        resolveButtonText = '无需处理';
+        resolveButtonColor = 0x6b7280; // gray
+        resolveButtonEnabled = false;
+      } else if (isTutorialCorridorNodeResolved(this.gameState, currentNode.id)) {
+        resolveButtonText = '已处理';
+        resolveButtonColor = 0x6b7280; // gray
+        resolveButtonEnabled = false;
+      }
+    }
+
+    const resolveBtn = this.add.rectangle(300, buttonY, 120, 40, resolveButtonColor);
     resolveBtn.setStrokeStyle(2, 0x34d399);
-    resolveBtn.setInteractive({ useHandCursor: true });
-    this.add.text(300, buttonY, '处理节点', {
+
+    if (resolveButtonEnabled) {
+      resolveBtn.setInteractive({ useHandCursor: true });
+      resolveBtn.on('pointerdown', () => {
+        this.handleResolve();
+      });
+    }
+
+    this.add.text(300, buttonY, resolveButtonText, {
       fontSize: '16px',
       color: '#ffffff',
     }).setOrigin(0.5);
-    resolveBtn.on('pointerdown', () => {
-      this.handleResolve();
-    });
 
     // Back button
     const backBtn = this.add.rectangle(150, buttonY, 120, 40, 0x6b7280);

@@ -5,7 +5,6 @@ import {
   getGridMap,
   moveOnGridMap,
 } from '../../systems/map/gridMapEngine';
-import { drawTextButton } from '../../ui/drawTextButton';
 import {
   CANVAS_WIDTH,
   COLOR_DARK_BG,
@@ -18,8 +17,8 @@ interface GridMapData {
   gameState: GameState;
 }
 
-const TILE_SIZE = 76;
-const TILE_GAP = 8;
+const TILE_SIZE = 52;
+const TILE_GAP = 4;
 
 const TILE_SYMBOL: Record<GridTileType, string> = {
   town: '镇',
@@ -51,12 +50,10 @@ const TILE_COLOR: Record<GridTileType, number> = {
 const COLOR_VISITED_BORDER = 0xfbbf24;
 const COLOR_ADJACENT_BORDER = 0x34d399;
 const COLOR_PLAYER_BORDER = 0xfde047;
-const COLOR_UNREVEALED_BORDER = 0x374151;
-const COLOR_HOVER = 0xffffff;
+const COLOR_UNREVEALED_BG = 0x1f2937;
 
 export class GridMapScene extends Phaser.Scene {
   private gameState!: GameState;
-  private mapDef!: ReturnType<typeof getGridMap> & { id: string; name: string; width: number; height: number };
 
   constructor() {
     super({ key: 'GridMapScene' });
@@ -69,64 +66,78 @@ export class GridMapScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor(COLOR_DARK_BG);
 
-    this.mapDef = getGridMap(this.gameState.activeMapId!)!;
-
-    const mapPixelWidth = this.mapDef.width * (TILE_SIZE + TILE_GAP) - TILE_GAP;
-    const startX = (CANVAS_WIDTH - mapPixelWidth) / 2;
-    const gridStartY = 120;
+    const mapDef = getGridMap(this.gameState.activeMapId!);
+    const width = mapDef?.width ?? 13;
+    const height = mapDef?.height ?? 9;
 
     // Title
-    const title = this.add.text(
+    this.add.text(
       CANVAS_WIDTH / 2,
-      50,
-      `格子地图：${this.mapDef.name}`,
+      28,
+      `格子地图：${mapDef?.name ?? ''}`,
       {
         fontSize: `${FONT_SIZE_TITLE}px`,
         color: '#ffd700',
         align: 'center',
       },
-    );
-    title.setOrigin(0.5);
+    ).setOrigin(0.5);
 
+    // Calculate grid positioning
+    const mapPixelWidth = width * (TILE_SIZE + TILE_GAP) - TILE_GAP;
+    const startX = (CANVAS_WIDTH - mapPixelWidth) / 2;
+    const gridStartY = 60;
 
-    // Grid
-    this.renderGrid(startX, gridStartY);
+    // Render grid
+    this.renderGrid(startX, gridStartY, mapDef!);
 
-    // Info panel
-    const infoY = gridStartY + this.mapDef.height * (TILE_SIZE + TILE_GAP) - TILE_GAP + 20;
+    // Info panel below grid
+    const infoY = gridStartY + height * (TILE_SIZE + TILE_GAP) - TILE_GAP + 12;
     this.renderInfoPanel(infoY);
 
     // Back button
-    const backY = infoY + 130;
-    drawTextButton(this, {
-      text: '返回出发准备',
-      x: CANVAS_WIDTH / 2,
-      y: backY,
-      width: 220,
-      height: 40,
-      onClick: () => this.returnToPrep(),
+    const backBtnY = infoY + 110;
+    const backBtn = this.add.rectangle(
+      CANVAS_WIDTH / 2,
+      backBtnY,
+      200,
+      40,
+      0x374151,
+    ).setStrokeStyle(2, 0xfde047);
+    backBtn.setInteractive({ useHandCursor: true });
+    backBtn.on('pointerdown', () => {
+      this.scene.start('RoutePrepScene', { gameState: this.gameState });
     });
-
+    this.add.text(CANVAS_WIDTH / 2, backBtnY, '返回出发准备', {
+      fontSize: `${FONT_SIZE_BODY}px`,
+      color: '#ffffff',
+      align: 'center',
+    }).setOrigin(0.5);
   }
 
-  private renderGrid(startX: number, startY: number): void {
+  private renderGrid(startX: number, startY: number, mapDef: { width: number; height: number; tiles: GridTile[] }): void {
     const visited = new Set(this.gameState.visitedTileIds);
     const revealed = new Set(this.gameState.revealedTileIds);
     const px = this.gameState.playerPosition?.x ?? -1;
     const py = this.gameState.playerPosition?.y ?? -1;
 
     const tileByPos: Record<string, GridTile> = {};
-    for (const tile of this.mapDef.tiles) {
+    for (const tile of mapDef.tiles) {
       tileByPos[`${tile.x},${tile.y}`] = tile;
     }
 
-    for (let y = 0; y < this.mapDef.height; y++) {
-      for (let x = 0; x < this.mapDef.width; x++) {
+    for (let y = 0; y < mapDef.height; y++) {
+      for (let x = 0; x < mapDef.width; x++) {
         const tile = tileByPos[`${x},${y}`];
-        if (!tile) continue;
 
-        const bx = startX + x * (TILE_SIZE + TILE_GAP);
-        const by = startY + y * (TILE_SIZE + TILE_GAP);
+        const bx = startX + x * (TILE_SIZE + TILE_GAP) + TILE_SIZE / 2;
+        const by = startY + y * (TILE_SIZE + TILE_GAP) + TILE_SIZE / 2;
+
+        if (!tile) {
+          // No tile at this position - render empty
+          const bg = this.add.rectangle(bx, by, TILE_SIZE, TILE_SIZE, 0x0a0a14);
+          bg.setStrokeStyle(1, 0x1f2937);
+          continue;
+        }
 
         const isPlayer = x === px && y === py;
         const isVisited = visited.has(tile.id);
@@ -137,9 +148,7 @@ export class GridMapScene extends Phaser.Scene {
         // Body fill color
         let fillColor: number;
         if (!isRevealed) {
-          fillColor = 0x1f2937;
-        } else if (tile.type === 'obstacle') {
-          fillColor = TILE_COLOR['obstacle'];
+          fillColor = COLOR_UNREVEALED_BG;
         } else {
           fillColor = TILE_COLOR[tile.type] ?? 0x374151;
         }
@@ -153,19 +162,19 @@ export class GridMapScene extends Phaser.Scene {
         } else if (isVisited) {
           borderColor = COLOR_VISITED_BORDER;
         } else if (isRevealed) {
-          borderColor = COLOR_UNREVEALED_BORDER;
+          borderColor = 0x4b5563;
         } else {
-          borderColor = COLOR_UNREVEALED_BORDER;
+          borderColor = 0x1f2937;
         }
 
         // Draw tile background
         const bg = this.add.rectangle(bx, by, TILE_SIZE, TILE_SIZE, fillColor);
-        bg.setStrokeStyle(2, borderColor);
+        bg.setStrokeStyle(isPlayer || isClickable ? 3 : 2, borderColor);
 
         // Draw symbol text
         const symbolText = isRevealed ? TILE_SYMBOL[tile.type] : '?';
         const symbol = this.add.text(bx, by, symbolText, {
-          fontSize: `${FONT_SIZE_BODY}px`,
+          fontSize: `${FONT_SIZE_SMALL}px`,
           color: isRevealed ? '#ffffff' : '#6b7280',
           align: 'center',
         });
@@ -173,22 +182,23 @@ export class GridMapScene extends Phaser.Scene {
 
         // Player marker on top of player tile
         if (isPlayer) {
-          const marker = this.add.text(bx, by - TILE_SIZE / 2 + 8, '队', {
-            fontSize: `${FONT_SIZE_SMALL}px`,
+          const marker = this.add.text(bx, by - TILE_SIZE / 2 + 4, '队', {
+            fontSize: '12px',
             color: '#ffd700',
             align: 'center',
             backgroundColor: '#1a1a2e',
           });
           marker.setOrigin(0.5, 0);
         }
+
         // Make adjacent clickable tiles interactive
         if (isClickable) {
           bg.setInteractive({ useHandCursor: true });
           bg.on('pointerover', () => {
-            bg.setStrokeStyle(3, COLOR_HOVER);
+            bg.setStrokeStyle(4, 0xffffff);
           });
           bg.on('pointerout', () => {
-            bg.setStrokeStyle(2, COLOR_ADJACENT_BORDER);
+            bg.setStrokeStyle(3, COLOR_ADJACENT_BORDER);
           });
           bg.on('pointerdown', () => {
             this.handleTileClick(tile);
@@ -202,8 +212,7 @@ export class GridMapScene extends Phaser.Scene {
     const cx = CANVAS_WIDTH / 2;
 
     // Panel background
-    const panel = this.add.rectangle(cx, infoY + 50, 700, 130, 0x16213e);
-    panel.setStrokeStyle(2, 0x3b82f6);
+    this.add.rectangle(cx, infoY + 50, 760, 100, 0x16213e).setStrokeStyle(2, 0x3b82f6);
 
     // Info text
     const tile = getCurrentTile(this.gameState);
@@ -215,18 +224,17 @@ export class GridMapScene extends Phaser.Scene {
         ]
       : ['(未进入地图)'];
 
-    const infoText = this.add.text(cx, infoY + 20, lines.join('\n'), {
+    this.add.text(cx, infoY + 20, lines.join('\n'), {
       fontSize: `${FONT_SIZE_SMALL}px`,
       color: '#ffffff',
       align: 'center',
-      lineSpacing: 8,
-    });
-    infoText.setOrigin(0.5);
+      lineSpacing: 4,
+    }).setOrigin(0.5);
 
     // Resource text
-    const resourceText = this.add.text(
+    this.add.text(
       cx,
-      infoY + 80,
+      infoY + 70,
       [
         `Day ${this.gameState.day}  Food ${this.gameState.food}  Gold ${this.gameState.gold}  Parts ${this.gameState.spareParts}`,
         `Morale ${this.gameState.morale}/${this.gameState.moraleMax}  Caravan HP ${this.gameState.caravanHp}/${this.gameState.caravanMaxHp}`,
@@ -235,17 +243,9 @@ export class GridMapScene extends Phaser.Scene {
         fontSize: `${FONT_SIZE_SMALL}px`,
         color: '#d1d5db',
         align: 'center',
-        lineSpacing: 6,
+        lineSpacing: 4,
       },
-    );
-    resourceText.setOrigin(0.5);
-
-    // Message text placeholder
-    this.add.text(cx, infoY + 125, '', {
-      fontSize: `${FONT_SIZE_BODY}px`,
-      color: '#fde047',
-      align: 'center',
-    }).setOrigin(0.5);
+    ).setOrigin(0.5);
   }
 
   private handleTileClick(tile: GridTile): void {
@@ -253,7 +253,6 @@ export class GridMapScene extends Phaser.Scene {
     if (!pos) return;
 
     if (!this.isAdjacentToPlayer(tile)) {
-      this.showMessage('只能移动到相邻可通行格子', '#f87171');
       return;
     }
 
@@ -268,33 +267,10 @@ export class GridMapScene extends Phaser.Scene {
     if (!direction) return;
 
     const result = moveOnGridMap(this.gameState, direction);
-    this.showMessage(result.message, result.success ? '#fde047' : '#f87171');
+    if (!result.success) return;
 
-    // Re-render by restarting the scene
+    // Re-render by restarting scene
     this.scene.restart({ gameState: this.gameState });
-  }
-
-  private showMessage(msg: string, color: string): void {
-    // Append message as a temporary overlay text above the grid
-    const msgText = this.add.text(
-      CANVAS_WIDTH / 2,
-      95,
-      msg,
-      {
-        fontSize: `${FONT_SIZE_BODY}px`,
-        color,
-        align: 'center',
-        backgroundColor: '#1a1a2e',
-      },
-    );
-    msgText.setOrigin(0.5);
-    // Fade out after 2 seconds
-    this.tweens.add({
-      targets: msgText,
-      alpha: 0,
-      duration: 2000,
-      onComplete: () => msgText.destroy(),
-    });
   }
 
   private isAdjacentToPlayer(tile: GridTile): boolean {
@@ -303,9 +279,5 @@ export class GridMapScene extends Phaser.Scene {
     const dx = Math.abs(tile.x - pos.x);
     const dy = Math.abs(tile.y - pos.y);
     return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
-  }
-
-  private returnToPrep(): void {
-    this.scene.start('RoutePrepScene', { gameState: this.gameState });
   }
 }

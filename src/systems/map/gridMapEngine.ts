@@ -22,6 +22,9 @@ const TILE_MESSAGE: Record<GridTileType, string> = {
   obstacle: '前方无法通行。',
 };
 
+const REVEAL_RADIUS_START = 2;
+const REVEAL_RADIUS_MOVE = 2;
+
 export function getGridMap(mapId: string): GridMapDefinition | undefined {
   return getInitialGridMapById(mapId);
 }
@@ -35,7 +38,12 @@ export function getTileById(mapId: string, tileId: string): GridTile | undefined
 export function getTileAt(mapId: string, position: GridPosition): GridTile | undefined {
   const map = getGridMap(mapId);
   if (!map) return undefined;
-  if (position.x < 0 || position.y < 0 || position.x >= map.width || position.y >= map.height) {
+  if (
+    position.x < 0 ||
+    position.y < 0 ||
+    position.x >= map.width ||
+    position.y >= map.height
+  ) {
     return undefined;
   }
   return map.tiles.find((t) => t.x === position.x && t.y === position.y);
@@ -48,6 +56,31 @@ export function getAdjacentPositions(position: GridPosition): GridPosition[] {
     { x: position.x - 1, y: position.y },
     { x: position.x + 1, y: position.y },
   ];
+}
+
+export function getTilesInRadius(
+  mapId: string,
+  center: GridPosition,
+  radius: number,
+): GridTile[] {
+  const map = getGridMap(mapId);
+  if (!map) return [];
+  const result: GridTile[] = [];
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const tile = getTileAt(mapId, { x: center.x + dx, y: center.y + dy });
+      if (tile) result.push(tile);
+    }
+  }
+  return result;
+}
+
+function addToRevealed(gameState: GameState, tiles: GridTile[]): void {
+  for (const tile of tiles) {
+    if (!gameState.revealedTileIds.includes(tile.id)) {
+      gameState.revealedTileIds.push(tile.id);
+    }
+  }
 }
 
 export function startGridMap(gameState: GameState, mapId: string): GridMoveResult {
@@ -67,15 +100,9 @@ export function startGridMap(gameState: GameState, mapId: string): GridMoveResul
   if (!gameState.visitedTileIds.includes(startTile.id)) {
     gameState.visitedTileIds.push(startTile.id);
   }
-  if (!gameState.revealedTileIds.includes(startTile.id)) {
-    gameState.revealedTileIds.push(startTile.id);
-  }
-  for (const pos of getAdjacentPositions(gameState.playerPosition)) {
-    const tile = getTileAt(mapId, pos);
-    if (tile && !gameState.revealedTileIds.includes(tile.id)) {
-      gameState.revealedTileIds.push(tile.id);
-    }
-  }
+
+  const revealed = getTilesInRadius(mapId, gameState.playerPosition, REVEAL_RADIUS_START);
+  addToRevealed(gameState, revealed);
 
   return {
     gameState,
@@ -148,15 +175,9 @@ export function moveOnGridMap(gameState: GameState, direction: GridDirection): G
   if (!gameState.visitedTileIds.includes(tile.id)) {
     gameState.visitedTileIds.push(tile.id);
   }
-  if (!gameState.revealedTileIds.includes(tile.id)) {
-    gameState.revealedTileIds.push(tile.id);
-  }
-  for (const pos of getAdjacentPositions(gameState.playerPosition)) {
-    const adjTile = getTileAt(mapId, pos);
-    if (adjTile && !gameState.revealedTileIds.includes(adjTile.id)) {
-      gameState.revealedTileIds.push(adjTile.id);
-    }
-  }
+
+  const newlyRevealed = getTilesInRadius(mapId, gameState.playerPosition, REVEAL_RADIUS_MOVE);
+  addToRevealed(gameState, newlyRevealed);
 
   return {
     gameState,

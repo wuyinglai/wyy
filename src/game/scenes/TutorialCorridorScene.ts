@@ -6,11 +6,13 @@ import {
   moveTutorialCorridor,
   resolveTutorialCorridorNode,
 } from '../../systems/tutorial/tutorialCorridorEngine';
+import { getTutorialCorridorViewportRange } from './tutorialCorridorLayout';
 
 const TILE_SIZE = 60;
 const TILE_GAP = 8;
 const GRID_START_X = 40;
 const GRID_START_Y = 100;
+const VISIBLE_COLUMNS = 11;
 
 // 辅助函数：判断是否是墙格行
 export function isWallCell(row: number): boolean {
@@ -86,10 +88,19 @@ export class TutorialCorridorScene extends Phaser.Scene {
     const nodes = getVisibleTutorialCorridorNodes(this.gameState);
     const currentIndex = this.gameState.tutorialCorridorIndex;
 
+    // 获取视口范围
+    const { startIndex, endIndex } = getTutorialCorridorViewportRange(
+      currentIndex,
+      nodes.length,
+      VISIBLE_COLUMNS
+    );
+
     // 绘制三行：上墙、路线、下墙
     for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 20; col++) {
-        const x = GRID_START_X + col * (TILE_SIZE + TILE_GAP);
+      // 只渲染视口范围内的列
+      for (let displayCol = 0; displayCol < endIndex - startIndex; displayCol++) {
+        const nodeIndex = startIndex + displayCol;
+        const x = GRID_START_X + displayCol * (TILE_SIZE + TILE_GAP);
         const y = GRID_START_Y + row * (TILE_SIZE + TILE_GAP);
 
         if (isWallCell(row)) {
@@ -97,10 +108,16 @@ export class TutorialCorridorScene extends Phaser.Scene {
           this.renderWallTile(x, y);
         } else {
           // 路线格
-          this.renderRouteTile(x, y, col, nodes[col], currentIndex);
+          this.renderRouteTile(x, y, nodeIndex, nodes[nodeIndex], currentIndex);
         }
       }
     }
+
+    // 显示视口范围信息
+    this.add.text(400, 70, `显示: ${startIndex + 1} - ${endIndex} / ${nodes.length}`, {
+      fontSize: '14px',
+      color: '#9ca3af',
+    }).setOrigin(0.5);
   }
 
   private renderWallTile(x: number, y: number): void {

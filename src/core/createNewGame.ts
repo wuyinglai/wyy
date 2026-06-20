@@ -78,5 +78,11 @@ export function createNewGame(): GameState {
     visitedTileIds: [],
     revealedTileIds: [],
     resolvedTileIds: [],
+
+    // Tutorial corridor
+    activeTutorialCorridorId: null,
+    tutorialCorridorIndex: 0,
+    visitedTutorialCorridorNodeIds: [],
+    resolvedTutorialCorridorNodeIds: [],
   };
 }

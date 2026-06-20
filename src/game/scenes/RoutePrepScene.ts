@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { GameState } from '../../core/types';
-import { startGridMap } from '../../systems/map/gridMapEngine';
+import { startTutorialCorridor } from '../../systems/tutorial/tutorialCorridorEngine';
 import { drawPanel } from '../../ui/drawPanel';
 import { drawTextButton } from '../../ui/drawTextButton';
 import {
@@ -43,7 +43,7 @@ export class RoutePrepScene extends Phaser.Scene {
     this.add.text(centerX, startY + 70, [
       '当前位置: 灰桥镇',
       '目标: 灰灯驿站',
-      '地图: 灰桥镇外荒野 (7x5 格子地图)',
+      '路线: 灰桥镇至灰灯驿站教学路线 (1×20 直线)',
     ].join('\n'), {
       fontSize: `${FONT_SIZE_BODY}px`,
       color: '#ffffff',
@@ -115,7 +115,7 @@ export class RoutePrepScene extends Phaser.Scene {
   }
 
   private startRoute(): void {
-    startGridMap(this.gameState, 'graybridge_region_map');
-    this.scene.start('GridMapScene', { gameState: this.gameState });
+    startTutorialCorridor(this.gameState, 'tutorial_corridor_graybridge_to_graylamp');
+    this.scene.start('TutorialCorridorScene', { gameState: this.gameState });
   }
 }

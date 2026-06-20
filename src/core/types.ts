@@ -159,6 +159,33 @@ export interface GridMoveResult {
   tile?: GridTile;
 }
 
+// Tutorial corridor node types
+export type TutorialCorridorNodeType =
+  | 'town'
+  | 'road'
+  | 'event'
+  | 'resource'
+  | 'battle'
+  | 'outpost';
+
+// Tutorial corridor node
+export interface TutorialCorridorNode {
+  id: string;
+  index: number;
+  type: TutorialCorridorNodeType;
+  name: string;
+  description: string;
+}
+
+// Tutorial corridor map definition
+export interface TutorialCorridorMap {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  nodes: TutorialCorridorNode[];
+}
+
 // Negative status types (v2.1 placeholder)
 export type NegativeStatusType =
   | 'bleed'
@@ -270,4 +297,10 @@ export interface GameState {
   visitedTileIds: string[];
   revealedTileIds: string[];
   resolvedTileIds: string[];
+
+  // Tutorial corridor
+  activeTutorialCorridorId: string | null;
+  tutorialCorridorIndex: number;
+  visitedTutorialCorridorNodeIds: string[];
+  resolvedTutorialCorridorNodeIds: string[];
 }
